@@ -4,6 +4,10 @@ import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
+/**
+ * T should be a Result class
+ * */
+
 public class CallBackAdapter<T> implements Callback<T> {
 
     private IResponse iResponse;

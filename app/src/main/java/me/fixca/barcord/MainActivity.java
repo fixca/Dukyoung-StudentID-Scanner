@@ -3,11 +3,8 @@ package me.fixca.barcord;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.os.Bundle;
-import android.util.Log;
 import android.view.View;
-import android.view.animation.Animation;
 import android.widget.ProgressBar;
-import android.widget.TextView;
 
 import com.budiyev.android.codescanner.CodeScanner;
 import com.budiyev.android.codescanner.CodeScannerView;
@@ -22,7 +19,6 @@ import me.fixca.barcord.backend.logger.LoggerBody;
 import me.fixca.barcord.env.Env;
 import me.fixca.barcord.utils.Utils;
 import retrofit2.Call;
-import retrofit2.Callback;
 import retrofit2.Retrofit;
 
 public class MainActivity extends AppCompatActivity {
@@ -40,11 +36,15 @@ public class MainActivity extends AppCompatActivity {
 
         progressBar.setVisibility(View.GONE);
 
+        // TODO : Should fix that the activity stops during connecting to a web server
+
         scanner = new CodeScanner(this, scannerView);
         scanner.setDecodeCallback(result -> {
             runOnUiThread(() -> {
                 progressBar.setVisibility(View.VISIBLE);
             });
+
+            // TODO : change room_id to an each specific ID of room
             LoggerBody loggerBody = new LoggerBody(Env.KEY, result.getText(), Utils.getInstance().getTimeStamp(), "maker");
 
             Retrofit retrofit = RetrofitFactory.getInstance().getRetrofit();
@@ -54,6 +54,7 @@ public class MainActivity extends AppCompatActivity {
             adapter.setIResponse((call, response) -> {
                 LoggerResult loggerResult = (LoggerResult) response.body();
 
+                // TODO : Find a better way to display the result
                 if(loggerResult.success == 1) {
                     Utils.getInstance().printToast(MainActivity.this, "성공적으로 등록되었습니다!");
                 }
@@ -86,7 +87,7 @@ public class MainActivity extends AppCompatActivity {
                 }
             });
 
-            Call<LoggerResult> call = loggerService.log(loggerBody);
+            Call<LoggerResult> call = loggerService.initCall(loggerBody);
 
             Executors.newFixedThreadPool(1).execute(() -> call.enqueue(adapter));
         });

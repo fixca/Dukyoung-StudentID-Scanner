@@ -7,5 +7,5 @@ import retrofit2.http.POST;
 public interface LoggerService {
 
     @POST("api/logger")
-    Call<LoggerResult> log(@Body LoggerBody body);
+    Call<LoggerResult> initCall(@Body LoggerBody body);
 }
