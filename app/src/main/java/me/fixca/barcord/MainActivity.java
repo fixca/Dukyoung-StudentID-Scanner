@@ -2,6 +2,8 @@ package me.fixca.barcord;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.hardware.Camera;
+import android.hardware.camera2.CameraCharacteristics;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.ProgressBar;
@@ -38,6 +40,8 @@ public class MainActivity extends AppCompatActivity {
         progressBar.setVisibility(View.INVISIBLE);
 
         scanner = new CodeScanner(this, scannerView);
+        // Use front camera
+        scanner.setCamera(1);
         scanner.setDecodeCallback(result -> {
             changeProgressBar(View.VISIBLE);
 
