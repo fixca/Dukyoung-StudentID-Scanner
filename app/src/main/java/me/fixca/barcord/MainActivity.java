@@ -1,13 +1,11 @@
 package me.fixca.barcord;
 
-import androidx.appcompat.app.AppCompatActivity;
-
-import android.hardware.Camera;
-import android.hardware.camera2.CameraCharacteristics;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.ProgressBar;
+
+import androidx.appcompat.app.AppCompatActivity;
 
 import com.budiyev.android.codescanner.CodeScanner;
 import com.budiyev.android.codescanner.CodeScannerView;
@@ -16,10 +14,9 @@ import java.util.concurrent.Executors;
 
 import me.fixca.barcord.backend.CallBackAdapter;
 import me.fixca.barcord.backend.RetrofitFactory;
+import me.fixca.barcord.backend.logger.LoggerBody;
 import me.fixca.barcord.backend.logger.LoggerResult;
 import me.fixca.barcord.backend.logger.LoggerService;
-import me.fixca.barcord.backend.logger.LoggerBody;
-import me.fixca.barcord.env.Env;
 import me.fixca.barcord.popup.FailurePopup;
 import me.fixca.barcord.popup.ResultPopup;
 import me.fixca.barcord.utils.Utils;
@@ -52,7 +49,7 @@ public class MainActivity extends AppCompatActivity {
             int timestamp = Utils.getInstance().getTimeStamp();
             String room = "maker";
 
-            LoggerBody loggerBody = new LoggerBody(Env.KEY, id, timestamp, room);
+            LoggerBody loggerBody = new LoggerBody(BuildConfig.KEY, id, timestamp, room);
 
             Retrofit retrofit = RetrofitFactory.getInstance().getRetrofit();
             LoggerService loggerService = retrofit.create(LoggerService.class);

@@ -2,7 +2,7 @@ package me.fixca.barcord.backend;
 
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
-import me.fixca.barcord.env.Env;
+import me.fixca.barcord.BuildConfig;
 import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
 
@@ -20,7 +20,7 @@ public class RetrofitFactory {
 
     public Retrofit getRetrofit() {
         return new Retrofit.Builder()
-                .baseUrl(Env.BASE_URL)
+                .baseUrl(BuildConfig.BASE_URL)
                 .addConverterFactory(GsonConverterFactory.create())
                 .build();
     }
