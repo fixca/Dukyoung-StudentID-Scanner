@@ -3,6 +3,9 @@ package me.fixca.barcord.utils;
 import android.content.Context;
 import android.widget.Toast;
 
+import java.text.SimpleDateFormat;
+import java.util.Date;
+
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 
@@ -24,5 +27,15 @@ public class Utils {
 
     public void printToast(Context context, String message) {
         Toast.makeText(context, message, Toast.LENGTH_LONG).show();
+    }
+
+    // https://aljjabaegi.tistory.com/460
+    public static String getTimestampToDate(String timestampStr){
+        long timestamp = Long.parseLong(timestampStr);
+        Date date = new java.util.Date(timestamp*1000L);
+        SimpleDateFormat sdf = new java.text.SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        sdf.setTimeZone(java.util.TimeZone.getTimeZone("GMT+9"));
+        String formattedDate = sdf.format(date);
+        return formattedDate;
     }
 }

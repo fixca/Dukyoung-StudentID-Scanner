@@ -17,6 +17,7 @@ import me.fixca.barcord.backend.logger.LoggerResult;
 import me.fixca.barcord.backend.logger.LoggerService;
 import me.fixca.barcord.backend.logger.LoggerBody;
 import me.fixca.barcord.env.Env;
+import me.fixca.barcord.popup.ResultPopup;
 import me.fixca.barcord.utils.Utils;
 import retrofit2.Call;
 import retrofit2.Retrofit;
@@ -34,57 +35,72 @@ public class MainActivity extends AppCompatActivity {
         CodeScannerView scannerView = findViewById(R.id.scanner_view);
         progressBar = findViewById(R.id.progress_bar);
 
-        progressBar.setVisibility(View.GONE);
-
-        // TODO : Should fix that the activity stops during connecting to a web server
+        progressBar.setVisibility(View.INVISIBLE);
 
         scanner = new CodeScanner(this, scannerView);
         scanner.setDecodeCallback(result -> {
-            runOnUiThread(() -> {
-                progressBar.setVisibility(View.VISIBLE);
-            });
+            changeProgressBar(View.VISIBLE);
 
             // TODO : change room_id to an each specific ID of room
-            LoggerBody loggerBody = new LoggerBody(Env.KEY, result.getText(), Utils.getInstance().getTimeStamp(), "maker");
+            String id = result.getText();
+            int timestamp = Utils.getInstance().getTimeStamp();
+            String room = "maker";
+
+            LoggerBody loggerBody = new LoggerBody(Env.KEY, id, timestamp, room);
 
             Retrofit retrofit = RetrofitFactory.getInstance().getRetrofit();
             LoggerService loggerService = retrofit.create(LoggerService.class);
             CallBackAdapter<LoggerResult> adapter = new CallBackAdapter<>();
 
             adapter.setIResponse((call, response) -> {
-                LoggerResult loggerResult = (LoggerResult) response.body();
+                Executors.newFixedThreadPool(1).execute(() -> {
+                    LoggerResult loggerResult = (LoggerResult) response.body();
 
-                // TODO : Find a better way to display the result
-                if(loggerResult.success == 1) {
-                    Utils.getInstance().printToast(MainActivity.this, "성공적으로 등록되었습니다!");
-                }
-                else {
-                    Utils.getInstance().printToast(MainActivity.this, "등록에 실패하였습니다!");
-                }
+                    // TODO : Find a better way to display the result
 
-                try {
-                    Thread.sleep(3000);
-                    runOnUiThread(() -> {
-                        scanner.startPreview();
-                        progressBar.setVisibility(View.GONE);
-                    });
-                } catch (InterruptedException e) {
+                        runOnUiThread(() -> {
+                            if (loggerResult.success == 1) {
+                                ResultPopup.getInstance().printPopup(MainActivity.this, findViewById(android.R.id.content).getRootView(), id, "name", timestamp, room, () -> {
+                                    try {
+                                        changeProgressBar(View.INVISIBLE);
+                                        Thread.sleep(5000);
+                                        startPreview();
+                                    }
+                                    catch (InterruptedException e) {
 
-                }
+                                    }
+                                });
+                            }
+                            else {
+                                Utils.getInstance().printToast(MainActivity.this, "등록에 실패하였습니다!");
+                                try {
+                                    changeProgressBar(View.INVISIBLE);
+                                    Thread.sleep(1000);
+                                    startPreview();
+                                }
+                                catch (InterruptedException e) {
+
+                                }
+                            }
+                        });
+                });
             });
 
             adapter.setIFailure((call, t) -> {
-                t.printStackTrace();
-                Utils.getInstance().printToast(MainActivity.this, "등록에 실패하였습니다!");
-                try {
-                    Thread.sleep(3000);
-                    runOnUiThread(() -> {
-                        scanner.startPreview();
-                        progressBar.setVisibility(View.GONE);
-                    });
-                } catch (InterruptedException e) {
+                Executors.newFixedThreadPool(1).execute(() -> {
+                    t.printStackTrace();
+                    try {
+                        runOnUiThread(() -> {
+                            Utils.getInstance().printToast(MainActivity.this, "등록에 실패하였습니다!");
+                        });
+                        changeProgressBar(View.INVISIBLE);
+                        Thread.sleep(1000);
+                        startPreview();
+                    }
+                    catch (InterruptedException e) {
 
-                }
+                    }
+                });
             });
 
             Call<LoggerResult> call = loggerService.initCall(loggerBody);
@@ -103,5 +119,17 @@ public class MainActivity extends AppCompatActivity {
     protected void onPause() {
         scanner.releaseResources();
         super.onPause();
+    }
+
+    private void changeProgressBar(int status) {
+        runOnUiThread(() -> {
+            progressBar.setVisibility(status);
+        });
+    }
+
+    private void startPreview() {
+        runOnUiThread(() -> {
+            scanner.startPreview();
+        });
     }
 }
