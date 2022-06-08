@@ -5,6 +5,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import android.hardware.Camera;
 import android.hardware.camera2.CameraCharacteristics;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.ProgressBar;
 
@@ -19,6 +20,7 @@ import me.fixca.barcord.backend.logger.LoggerResult;
 import me.fixca.barcord.backend.logger.LoggerService;
 import me.fixca.barcord.backend.logger.LoggerBody;
 import me.fixca.barcord.env.Env;
+import me.fixca.barcord.popup.FailurePopup;
 import me.fixca.barcord.popup.ResultPopup;
 import me.fixca.barcord.utils.Utils;
 import retrofit2.Call;
@@ -57,14 +59,17 @@ public class MainActivity extends AppCompatActivity {
             CallBackAdapter<LoggerResult> adapter = new CallBackAdapter<>();
 
             adapter.setIResponse((call, response) -> {
+                Log.d("debug", "IResponse executed!");
+                Log.d("debug", response.toString());
                 Executors.newFixedThreadPool(1).execute(() -> {
                     LoggerResult loggerResult = (LoggerResult) response.body();
 
                     // TODO : Find a better way to display the result
 
                         runOnUiThread(() -> {
-                            if (loggerResult.success == 1) {
-                                ResultPopup.getInstance().printPopup(MainActivity.this, findViewById(android.R.id.content).getRootView(), id, "name", timestamp, room, () -> {
+                            if (response.isSuccessful()) {
+                                ResultPopup resultPopup = new ResultPopup(id, "name", timestamp, room);
+                                resultPopup.setCallBack(() -> {
                                     try {
                                         changeProgressBar(View.INVISIBLE);
                                         Thread.sleep(5000);
@@ -74,36 +79,44 @@ public class MainActivity extends AppCompatActivity {
 
                                     }
                                 });
+                                resultPopup.printPopup(MainActivity.this, findViewById(android.R.id.content).getRootView());
                             }
                             else {
-                                Utils.getInstance().printToast(MainActivity.this, "등록에 실패하였습니다!");
-                                try {
-                                    changeProgressBar(View.INVISIBLE);
-                                    Thread.sleep(1000);
-                                    startPreview();
-                                }
-                                catch (InterruptedException e) {
+                                FailurePopup failurePopup = new FailurePopup(response.code());
+                                failurePopup.setCallBack(() -> {
+                                    try {
+                                        changeProgressBar(View.INVISIBLE);
+                                        Thread.sleep(5000);
+                                        startPreview();
+                                    }
+                                    catch (InterruptedException e) {
 
-                                }
+                                    }
+                                });
+                                failurePopup.printPopup(MainActivity.this, findViewById(android.R.id.content).getRootView());
                             }
                         });
                 });
             });
 
             adapter.setIFailure((call, t) -> {
+                Log.d("debug", "IFailure executed!");
+                t.printStackTrace();
                 Executors.newFixedThreadPool(1).execute(() -> {
-                    t.printStackTrace();
-                    try {
-                        runOnUiThread(() -> {
-                            Utils.getInstance().printToast(MainActivity.this, "등록에 실패하였습니다!");
-                        });
-                        changeProgressBar(View.INVISIBLE);
-                        Thread.sleep(1000);
-                        startPreview();
-                    }
-                    catch (InterruptedException e) {
+                    runOnUiThread(() -> {
+                        FailurePopup failurePopup = new FailurePopup(-1);
+                        failurePopup.setCallBack(() -> {
+                            try {
+                                changeProgressBar(View.INVISIBLE);
+                                Thread.sleep(5000);
+                                startPreview();
+                            }
+                            catch (InterruptedException e) {
 
-                    }
+                            }
+                        });
+                        failurePopup.printPopup(MainActivity.this, findViewById(android.R.id.content).getRootView());
+                    });
                 });
             });
 

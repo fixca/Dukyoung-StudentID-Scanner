@@ -16,37 +16,26 @@ import lombok.Getter;
 import me.fixca.barcord.R;
 import me.fixca.barcord.utils.Utils;
 
-public class ResultPopup extends AbstractPopup {
+public class FailurePopup extends AbstractPopup {
+    private int errorCode;
 
-    private String id;
-    private String name;
-    private int timestamp;
-    private String room;
-
-    public ResultPopup(String id, String name, int timestamp, String room) {
-        this.id = id;
-        this.name = name;
-        this.timestamp = timestamp;
-        this.room = room;
+    public FailurePopup(int errorCode) {
+        this.errorCode = errorCode;
     }
 
     @Override
     public void printPopup(Activity activity, View parentView) {
         LayoutInflater layoutInflater = (LayoutInflater) activity.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-        View popupView = layoutInflater.inflate(R.layout.result_popup, null);
+        View popupView = layoutInflater.inflate(R.layout.failure_popup, null);
 
         int width = LinearLayout.LayoutParams.MATCH_PARENT;
         int height = LinearLayout.LayoutParams.WRAP_CONTENT;
 
-        TextView idTextView = popupView.findViewById(R.id.result_popup_id);
-        TextView nameTextView = popupView.findViewById(R.id.result_popup_name);
-        TextView timeTextView = popupView.findViewById(R.id.result_popup_time);
-        TextView roomTextView = popupView.findViewById(R.id.result_popup_room);
+        TextView codeTextView = popupView.findViewById(R.id.failure_code);
+        TextView reasonTextView = popupView.findViewById(R.id.failure_reason);
 
-        idTextView.setText("아이디 : " + id);
-        nameTextView.setText("이름 : " + name);
-        timeTextView.setText("시간 : " + Utils.getInstance().getTimestampToDate(String.valueOf(timestamp)));
-        roomTextView.setText("교실 아이디 : " + room);
+        codeTextView.setText("에러 코드 : " + errorCode);
+        reasonTextView.setText("에러 메시지 : " + Utils.getInstance().getReasonByCode(errorCode));
 
         PopupWindow popupWindow = new PopupWindow(popupView, width, height, true);
 
