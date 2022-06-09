@@ -49,6 +49,8 @@ public class MainActivity extends AppCompatActivity {
             int timestamp = Utils.getInstance().getTimeStamp();
             String room = "maker";
 
+            // TODO : Get a name by id (required student database from my high school)
+
             LoggerBody loggerBody = new LoggerBody(BuildConfig.KEY, id, timestamp, room);
 
             Retrofit retrofit = RetrofitFactory.getInstance().getRetrofit();
@@ -56,10 +58,7 @@ public class MainActivity extends AppCompatActivity {
             CallBackAdapter<LoggerResult> adapter = new CallBackAdapter<>();
 
             adapter.setIResponse((call, response) -> {
-                Log.d("debug", "IResponse executed!");
-                Log.d("debug", response.toString());
                 Executors.newFixedThreadPool(1).execute(() -> {
-                    LoggerResult loggerResult = (LoggerResult) response.body();
 
                     // TODO : Find a better way to display the result
 
@@ -97,7 +96,6 @@ public class MainActivity extends AppCompatActivity {
             });
 
             adapter.setIFailure((call, t) -> {
-                Log.d("debug", "IFailure executed!");
                 t.printStackTrace();
                 Executors.newFixedThreadPool(1).execute(() -> {
                     runOnUiThread(() -> {
